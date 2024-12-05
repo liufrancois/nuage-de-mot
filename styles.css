@@ -1,0 +1,63 @@
+body {
+    font-family: Arial, sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* Centre horizontalement */
+    margin: 0;
+    padding: 0;
+    text-align: center;
+    background-color: #000000f1;
+    height: 100vh;
+}
+
+h1 {
+    font-size: 2rem;
+    margin-bottom: 20px;
+    color: white;
+}
+
+textarea {
+    width: 80%;
+    max-width: 800px;
+    margin-bottom: 15px;
+    padding: 10px;
+    font-size: 1rem;
+    border-radius: 5px;
+    border: 1px solid #cccccc74;
+    resize: none;
+    background-color: #1e1e1e;
+    color: white;
+}
+
+input[type="file"] {
+    margin: 10px 0;
+    color: white;
+}
+
+button {
+    padding: 10px 20px;
+    margin: 5px;
+    font-size: 1rem;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #45a049;
+    color: white;
+}
+
+#wordcloud {
+    width: 80%;
+    max-width: 800px;
+    margin-bottom: 15px;
+    margin-top: 15px;
+    padding: 10px;
+    border-radius: 5px;
+    border: 1px solid #cccccc74;
+    background-color: #1e1e1e;
+}    
+

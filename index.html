@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nuage de mots</title>
+    <link rel="stylesheet" type="text/css" href="./styles.css">
+    <script src="wordcloud2.js-gh-pages/src/wordcloud2.js"></script>
+</head>
+<body>
+    <h1>Nuage de mots</h1>
+
+    <textarea id="textArea" rows="15" cols="75" placeholder="Texte à analyser"></textarea>
+    <input type="file" id="fileInput" accept=".txt" onchange="toggleImportButton()">
+    <button id="importButton" onclick="importFile()" style="display: none;">Importer</button>
+    <button id="analyzeButton">Analyser</button>
+    <canvas id="wordcloudCanvas" width="800" height="400" style="display:none;"></canvas>
+
+    <a id="downloadLink" style="display: none;">
+        <button id="downloadButton">Télécharger le nuage de mots</button>
+    </a>
+
+    <script>
+        // Fonction pour afficher le bouton d'importation de fichier
+        function toggleImportButton() {
+            const fileInput = document.getElementById('fileInput');
+            const importButton = document.getElementById('importButton');
+            if (fileInput.files.length > 0) {
+                importButton.style.display = 'inline-block';
+            } else {
+                importButton.style.display = 'none';
+            }
+        }
+
+        // Fonction pour importer un fichier texte
+        function importFile() {
+            const fileInput = document.getElementById('fileInput');
+            const textArea = document.getElementById('textArea');
+
+            if (fileInput.files.length === 0) {
+                alert('Veuillez sélectionner un fichier.');
+                return;
+            }
+
+            const file = fileInput.files[0];
+            const reader = new FileReader();
+
+            reader.onload = function(event) {
+                textArea.value = event.target.result;
+            };
+
+            reader.readAsText(file);
+        }
+
+        // Fonction pour envoyer le texte au serveur et créer le nuage de mots
+        async function sendToServer() {
+            const textArea = document.getElementById('textArea');
+            const text = textArea.value;
+
+            if (!text) {
+                alert("Le texte est vide !");
+                return;
+            }
+
+            try {
+                const response = await fetch('http://localhost:5000/projet', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ text: text }),
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    
+                    // Préparer les données pour le nuage de mots
+                    const words = Object.entries(data.occurences).map(([word, count]) => {
+                        if (word && count) {
+                            return {
+                                text: word,
+                                weight: count
+                            };
+                        }
+                        return null;
+                    }).filter(Boolean);
+
+                    // Créer le nuage de mots
+                    const canvas = document.getElementById('wordcloudCanvas');
+                    WordCloud(canvas, {
+                        list: words.map(item => [item.text, item.weight]),
+                        gridSize: 10,
+                        weightFactor: 20,
+                        fontFamily: 'Arial',
+                        color: 'random-light',
+                        backgroundColor: '#1e1e1e',
+                        rotateRatio: 0.8,
+                    });
+
+                    setTimeout(function() {
+                        // Générer l'image pour le téléchargement
+                        const dataURL = canvas.toDataURL("image/png");
+
+                        const downloadLink = document.getElementById('downloadLink');
+                        downloadLink.href = dataURL;
+                        downloadLink.download = 'wordcloud.png';
+                        downloadLink.style.display = 'block';
+
+                        // Afficher le canvas après génération du nuage de mots
+                        canvas.style.display = 'block';
+                    }, 500);
+                } else {
+                    alert("Une erreur est survenue côté serveur.");
+                }
+            } catch (error) {
+                console.error("Erreur lors de la communication avec le serveur :", error);
+                alert("Impossible de communiquer avec le serveur.");
+            }
+        }
+
+        document.addEventListener("DOMContentLoaded", function() {
+            const analyzeButton = document.getElementById('analyzeButton');
+            analyzeButton.addEventListener('click', sendToServer);
+        });
+    </script>
+</body>
+</html>
